@@ -16,6 +16,13 @@ def pytest_addoption(parser):
         help='Update the snapshots.'
     )
     group.addoption(
+        '--snapshot-keep-deprecated',
+        action='store_true',
+        default=False,
+        dest='snapshot_keep_deprecated',
+        help='Don\'t delete the deprecated snapshots.'
+    )
+    group.addoption(
         '--snapshot-verbose',
         action='store_true',
         default=False,
@@ -76,7 +83,8 @@ def snapshot(request):
 def pytest_terminal_summary(terminalreporter):
     if terminalreporter.config.option.snapshot_update:
         for module in SnapshotModule.get_modules():
-            module.delete_unvisited()
+            if not terminalreporter.config.option.snapshot_keep_deprecated:
+                module.delete_unvisited()
             module.save()
 
     terminalreporter.config._snapshotsession.display(terminalreporter)
